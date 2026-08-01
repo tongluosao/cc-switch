@@ -92,22 +92,26 @@ jobs:
         run: |
           set -euxo pipefail
           apt-get update
+          # First install minimal required tools including curl for rustup
+          apt-get install -y --no-install-recommends \
+            curl \
+            ca-certificates \
+            gnupg
+          # Add universe repository (needed for some packages in 20.04)
+          apt-get install -y --no-install-recommends software-properties-common
+          add-apt-repository universe
+          apt-get update
           # Core build tools and pkg-config
           apt-get install -y --no-install-recommends \
             build-essential \
             pkg-config \
-            curl \
             wget \
             file \
             patchelf \
             libssl-dev \
             rpm \
             elfutils \
-            xdg-utils \
-            software-properties-common
-          # Add universe repository (needed for some packages in 20.04)
-          add-apt-repository universe || true
-          apt-get update
+            xdg-utils
           # GTK/GLib stack for gdk-3.0, glib-2.0, gio-2.0
           apt-get install -y --no-install-recommends \
             libgtk-3-dev \
