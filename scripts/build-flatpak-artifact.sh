@@ -23,7 +23,7 @@ if ! docker info >/dev/null 2>&1; then
 fi
 
 if [[ -z "${DEB_SRC}" ]]; then
-  "${ROOT_DIR}/scripts/ubuntu22-build-env.sh" build-deb
+  bash "${ROOT_DIR}/scripts/ubuntu22-build-env.sh" build-deb
   DEB_SRC="$(find "${ROOT_DIR}/src-tauri/target/release/bundle/deb" -type f -name '*.deb' | head -n 1 || true)"
 fi
 
