@@ -36,6 +36,42 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Install Linux system deps (Ubuntu 20.04 container)
+        if: runner.os == 'Linux' && matrix.container != null
+        shell: bash
+        run: |
+          set -euxo pipefail
+          apt-get update
+          # First install minimal required tools including curl for rustup
+          apt-get install -y --no-install-recommends \
+            curl \
+            ca-certificates \
+            gnupg
+          # Add universe repository (needed for some packages in 20.04)
+          apt-get install -y --no-install-recommends software-properties-common
+          add-apt-repository universe
+          apt-get update
+          # Core build tools and pkg-config
+          apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            wget \
+            file \
+            patchelf \
+            libssl-dev \
+            rpm \
+            elfutils \
+            xdg-utils
+          # GTK/GLib stack for gdk-3.0, glib-2.0, gio-2.0
+          apt-get install -y --no-install-recommends \
+            libgtk-3-dev \
+            librsvg2-dev \
+            libayatana-appindicator3-dev
+          # WebKit2GTK (Ubuntu 20.04 has 4.0)
+          apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev
+          # libsoup 2.4 for Ubuntu 20.04
+          apt-get install -y --no-install-recommends libsoup2.4-dev
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -85,42 +121,6 @@ jobs:
           # libsoup also changed major version; prefer 3.0 with fallback to 2.4
           sudo apt-get install -y --no-install-recommends libsoup-3.0-dev \
             || sudo apt-get install -y --no-install-recommends libsoup2.4-dev
-
-      - name: Install Linux system deps (Ubuntu 20.04 container)
-        if: runner.os == 'Linux' && matrix.container != null
-        shell: bash
-        run: |
-          set -euxo pipefail
-          apt-get update
-          # First install minimal required tools including curl for rustup
-          apt-get install -y --no-install-recommends \
-            curl \
-            ca-certificates \
-            gnupg
-          # Add universe repository (needed for some packages in 20.04)
-          apt-get install -y --no-install-recommends software-properties-common
-          add-apt-repository universe
-          apt-get update
-          # Core build tools and pkg-config
-          apt-get install -y --no-install-recommends \
-            build-essential \
-            pkg-config \
-            wget \
-            file \
-            patchelf \
-            libssl-dev \
-            rpm \
-            elfutils \
-            xdg-utils
-          # GTK/GLib stack for gdk-3.0, glib-2.0, gio-2.0
-          apt-get install -y --no-install-recommends \
-            libgtk-3-dev \
-            librsvg2-dev \
-            libayatana-appindicator3-dev
-          # WebKit2GTK (Ubuntu 20.04 has 4.0)
-          apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev
-          # libsoup 2.4 for Ubuntu 20.04
-          apt-get install -y --no-install-recommends libsoup2.4-dev
 
       - name: Setup pnpm
         if: runner.os != 'Windows' || matrix.arch != 'arm64'
