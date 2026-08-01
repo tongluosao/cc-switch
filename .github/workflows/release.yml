@@ -70,9 +70,9 @@ jobs:
             libcairo2-dev \
             librsvg2-dev \
             libayatana-appindicator3-dev \
-            libjavascriptcoregtk-4.0-37-dev \
-            libsoup2.4-1-dev \
-            libwebkit2gtk-4.0-37-dev \
+            libjavascriptcoregtk-4.0-dev \
+            libsoup2.4-dev \
+            libwebkit2gtk-4.0-dev \
             libxdo-dev \
             libxcb1 \
             libxrandr2 \
