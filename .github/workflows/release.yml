@@ -14,7 +14,8 @@ concurrency:
 
 jobs:
   release:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'ubuntu-20.04-container' && 'ubuntu-latest' || matrix.os }}
+    container: ${{ matrix.container }}
     environment: release
     strategy:
       fail-fast: false
@@ -27,6 +28,8 @@ jobs:
           - os: ubuntu-22.04
           - os: ubuntu-22.04-arm
             arch: arm64
+          - os: ubuntu-20.04-container
+            container: ubuntu:20.04
           - os: macos-14
 
     steps:
@@ -51,8 +54,8 @@ jobs:
         run: |
           rustup target add aarch64-apple-darwin x86_64-apple-darwin
 
-      - name: Install Linux system deps
-        if: runner.os == 'Linux'
+      - name: Install Linux system deps (non-container)
+        if: runner.os == 'Linux' && matrix.container == null
         shell: bash
         run: |
           set -euxo pipefail
@@ -82,6 +85,38 @@ jobs:
           # libsoup also changed major version; prefer 3.0 with fallback to 2.4
           sudo apt-get install -y --no-install-recommends libsoup-3.0-dev \
             || sudo apt-get install -y --no-install-recommends libsoup2.4-dev
+
+      - name: Install Linux system deps (Ubuntu 20.04 container)
+        if: runner.os == 'Linux' && matrix.container != null
+        shell: bash
+        run: |
+          set -euxo pipefail
+          apt-get update
+          # Core build tools and pkg-config
+          apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            curl \
+            wget \
+            file \
+            patchelf \
+            libssl-dev \
+            rpm \
+            elfutils \
+            xdg-utils \
+            software-properties-common
+          # Add universe repository (needed for some packages in 20.04)
+          add-apt-repository universe || true
+          apt-get update
+          # GTK/GLib stack for gdk-3.0, glib-2.0, gio-2.0
+          apt-get install -y --no-install-recommends \
+            libgtk-3-dev \
+            librsvg2-dev \
+            libayatana-appindicator3-dev
+          # WebKit2GTK (Ubuntu 20.04 has 4.0)
+          apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev
+          # libsoup 2.4 for Ubuntu 20.04
+          apt-get install -y --no-install-recommends libsoup2.4-dev
 
       - name: Setup pnpm
         if: runner.os != 'Windows' || matrix.arch != 'arm64'
