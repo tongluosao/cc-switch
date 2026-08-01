@@ -23,7 +23,7 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          scripts/build-flatpak-artifact.sh
+          bash scripts/build-flatpak-artifact.sh
 
       - name: Prepare Flatpak Asset
         shell: bash
